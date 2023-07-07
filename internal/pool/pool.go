@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"net"
+	"os"
+	"runtime/pprof"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -319,6 +321,8 @@ func (p *ConnPool) waitTurn(ctx context.Context) error {
 	case <-timer.C:
 		timers.Put(timer)
 		atomic.AddUint32(&p.stats.Timeouts, 1)
+		internal.Logger.Printf(ctx, "pool timeout before goroutine dump")
+		pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
 		return ErrPoolTimeout
 	}
 }
