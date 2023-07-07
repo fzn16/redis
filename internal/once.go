@@ -20,6 +20,7 @@ import (
 	"context"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 // A Once will perform a successful action exactly once.
@@ -51,6 +52,7 @@ func (o *Once) Do(f func() error) error {
 		return nil
 	}
 	Logger.Printf(context.TODO(), "waiting on Once.Do")
+	start := time.Now()
 	o.m.Lock()
 	defer o.m.Unlock()
 	var err error
@@ -60,5 +62,8 @@ func (o *Once) Do(f func() error) error {
 			atomic.StoreUint32(&o.done, 1)
 		}
 	}
+	end := time.Now()
+	latency := end.Sub(start).Milliseconds()
+	Logger.Printf(context.TODO(), "complete Once.Do %v", latency)
 	return err
 }
